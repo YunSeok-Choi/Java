@@ -1,0 +1,170 @@
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+import java.awt.geom.*;
+
+public class PongGameSingle {
+
+	static public class MyFrame extends JFrame {
+
+		static class MyPanel extends JPanel {
+			public MyPanel() {
+				this.setSize(800, 400);
+				this.setBackground(Color.BLACK);
+			}
+
+			public void paint(Graphics g) {
+				super.paint(g);
+				Graphics2D g2d = (Graphics2D) g;
+				g2d.setColor(Color.WHITE);
+				g2d.fillRect(barLeftPos.x, barLeftPos.y, 20, barHeight);
+				g2d.fillRect(barRightPos.x, barRightPos.y, 20, barHeight);
+				g2d.setFont(new Font("TimesRoman", Font.BOLD, 50));
+				g2d.drawString(barLeftScore + " vs " + barRightScore, 400 - 50, 50);
+				g2d.fillOval(ballPos.x, ballPos.y, ballWidth, ballHeight);
+			}
+		}
+
+		static Timer timer = null;
+		static int barLeftScore = 0;
+		static int barRightScore = 0;
+		static int dir = 0; // 45도로 만 0 : 위ㅡ오른, 1 : 아래ㅡ오른, 2 : 위-왼, 3 : 아래-왼
+		static Point ballPos = new Point(400 - 10, 200 - 10);
+		static int ballSpeed = 4; // 1초당 2픽셀
+		static int ballWidth = 20;
+		static int ballHeight = 20;
+		static int barHeight = 80;
+		static Point barLeftPos = new Point(50, 160);
+		static Point barRightPos = new Point(800 - 50 - 20, 160);
+		static int barLeftYTarget = barLeftPos.y; // 공이 바에 맞는 값
+		static int barRightYTarget = barRightPos.y; // 공이 바에 맞는 값
+		static MyPanel myPanel = null;
+
+		public MyFrame(String title) {
+			super(title);
+			this.setVisible(true);
+			this.setSize(800, 400);
+			this.setLayout(new BorderLayout());
+			this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+			myPanel = new MyPanel();
+			this.add(myPanel, BorderLayout.CENTER);
+			setKeyListener();
+			startTimer();
+		}
+
+		public void setKeyListener() {
+			this.addKeyListener(new KeyAdapter() {
+				public void keyPressed(KeyEvent e) {
+					if (e.getKeyCode() == KeyEvent.VK_UP) {
+						barRightYTarget -= 10;
+						if (barRightPos.y < barRightYTarget) {
+							barRightYTarget = barRightPos.y - 10;
+						}
+					} else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+						barRightYTarget += 10;
+						if (barRightPos.y > barRightYTarget) {
+							barRightYTarget = barRightPos.y + 10;
+						}
+					}
+					if (e.getKeyChar() == 'w') {
+						barLeftYTarget -= 10;
+						if (barLeftPos.y < barLeftYTarget) {
+							barLeftYTarget = barLeftPos.y - 10;
+						}
+					} else if (e.getKeyChar() == 's') {
+						barLeftYTarget += 10;
+						if (barLeftPos.y > barLeftYTarget) {
+							barLeftYTarget = barLeftPos.y + 10;
+						}
+					}
+				}
+			});
+		}
+
+		public void startTimer() {
+			timer = new Timer(10, new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					if (barLeftPos.y > barLeftYTarget) {
+						barLeftPos.y -= 5;
+					} else if (barLeftPos.y < barLeftYTarget) {
+						barLeftPos.y += 5;
+					}
+					if (barRightPos.y > barRightYTarget) {
+						barRightPos.y -= 5;
+					} else if (barRightPos.y < barRightYTarget) {
+						barRightPos.y += 5;
+					}
+
+					if (dir == 0) { // 위-오
+						ballPos.x += ballSpeed;
+						ballPos.y -= ballSpeed;
+					} else if (dir == 1) {// 아래-오
+						ballPos.x += ballSpeed;
+						ballPos.y += ballSpeed;
+					} else if (dir == 2) {// 위 - 왼
+						ballPos.x -= ballSpeed;
+						ballPos.y -= ballSpeed;
+					} else if (dir == 3) {// 아래-왼
+						ballPos.x -= ballSpeed;
+						ballPos.y += ballSpeed;
+					}
+					checkCollistion();
+					myPanel.repaint();
+				}
+			});
+			timer.start(); // 시작
+		}
+
+		public void checkCollistion() {
+			if (dir == 0) { // 위-오
+				if (ballPos.y < 0) {
+					dir = 1;
+				} else if (ballPos.x > 800 - ballWidth) {
+					dir = 2;
+					barLeftScore++;
+				} else if (ballPos.x > barRightPos.x - ballWidth
+						&& (ballPos.y >= barRightPos.y && ballPos.y <= barRightPos.y + barHeight)) {
+					dir = 2;
+				}
+			} else if (dir == 1) {// 아래-오
+				if (ballPos.y > 400 - ballHeight - 40) {
+					dir = 0;
+				} else if (ballPos.x > 800 - ballWidth - 20) {
+					dir = 3;
+					barLeftScore++;
+				} else if (ballPos.x > barRightPos.x - ballWidth
+						&& (ballPos.y >= barRightPos.y && ballPos.y <= barRightPos.y + barHeight)) {
+					dir = 3;
+				}
+			} else if (dir == 2) {// 위 - 왼
+				if (ballPos.y < 0) {
+					dir = 3;
+				} else if (ballPos.x < 0) {
+					dir = 0;
+					barRightScore++;
+				} else if (ballPos.x < barLeftPos.x + ballWidth
+						&& (ballPos.y >= barLeftPos.y && ballPos.y <= barLeftPos.y + barHeight)) {
+					dir = 0;
+				}
+			} else if (dir == 3) {// 아래-왼
+				if (ballPos.y > 400 - ballHeight - 40) {
+					dir = 2;
+				} else if (ballPos.x < 0) {
+					dir = 1;
+					barRightScore++;
+				} else if (ballPos.x < barLeftPos.x + ballWidth
+						&& (ballPos.y >= barLeftPos.y && ballPos.y <= barLeftPos.y + barHeight)) {
+					dir = 1;
+				}
+			}
+		}
+	}
+
+	public static void main(String[] args) {
+		new MyFrame("Pong Gmae Single");
+
+	}
+
+}
