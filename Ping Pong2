@@ -1,0 +1,158 @@
+package PingBall;
+
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+
+public class Ping {
+
+	static class MyFrame extends JFrame {
+
+		public static class Ball {
+			int x, y, width, height;
+			int dir = (int) (Math.random() * 3);
+
+			Ball(int x, int y, int width, int height) {
+				this.x = x;
+				this.y = y;
+				this.width = width;
+				this.height = height;
+			}
+
+			public void timeGo() {
+				time = new Timer(10, new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						if (dir == 0) {
+							x += speed;
+							y -= speed;
+						} else if (dir == 1) {
+							x += speed;
+							y += speed;
+						} else if (dir == 2) {
+							x -= speed;
+							y -= speed;
+						} else if (dir == 3) {
+							x -= speed;
+							y += speed;
+						}
+						checkCollection();
+						myPanel.repaint();
+					}
+
+				});
+				time.start();
+			}
+
+			public void checkCollection() {
+				if (dir == 0) {
+					if (y < 0)
+						dir = 1;
+					else if (x > frameX - 80)
+						dir = 2;
+				} else if (dir == 1) {
+					if (y > frameY - 80)
+						dir = 0;
+					else if (x > frameX - 80)
+						dir = 3;
+				} else if (dir == 2) {
+					if (y < 0)
+						dir = 3;
+					else if (x < 0)
+						dir = 0;
+				} else if (dir == 3) {
+					if (y > frameY - 80)
+						dir = 2;
+					else if (x < 0)
+						dir = 1;
+
+				}
+			}
+		}
+
+		public class MyPanel extends JPanel {
+			int x, y;
+
+			public MyPanel() {
+				this.setBackground(Color.BLACK);
+				this.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						x = e.getX();
+						y = e.getY();
+
+						ball[p] = new Ball(x, y, 40, 40);
+						r = (float) Math.random();
+						g = (float) Math.random();
+						b = (float) Math.random();
+						c = new Color(r, g, b);
+						ball[p].timeGo();
+						p++;
+
+					}
+
+				});
+			}
+
+			public void paint(Graphics g) {
+				super.paint(g);
+				g.setColor(Color.WHITE);
+				g.fillOval(b1.x, b1.y, b1.width, b1.height);
+				g.setColor(Color.MAGENTA);
+				g.fillOval(b2.x, b2.y, b2.width, b2.height);
+				g.setColor(Color.BLUE);
+				g.fillOval(b3.x, b3.y, b3.width, b3.height);
+				g.setColor(Color.YELLOW);
+				g.fillOval(b4.x, b4.y, b4.width, b4.height);
+				g.setColor(Color.RED);
+				g.fillOval(b5.x, b5.y, b5.width, b5.height);
+				g.setColor(Color.GREEN);
+				g.fillOval(b6.x, b6.y, b6.width, b6.height);
+				for (int i = 0; i < p; i++) {
+					g.setColor(c);
+					g.fillOval(ball[i].x, ball[i].y, ball[i].width, ball[i].height);
+				}
+			}
+
+		}
+
+		static MyPanel myPanel;
+		static Ball b1 = new Ball(200, 200, 40, 40);
+		static Ball b2 = new Ball(800, 200, 40, 40);
+		static Ball b3 = new Ball(600, 500, 40, 40);
+		static Ball b4 = new Ball(100, 400, 40, 40);
+		static Ball b5 = new Ball(1200, 100, 40, 40);
+		static Ball b6 = new Ball(1700, 600, 40, 40);
+		static Ball ball[] = new Ball[100];
+		static Timer time;
+		static Color c;
+		static float r , g , b;
+		static int speed = 10;
+		static int frameX = 1900;
+		static int frameY = 1000;
+		static int p = 0;
+
+		public MyFrame(String title) {
+			super(title);
+			this.setSize(frameX, frameY);
+			this.setVisible(true);
+			this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+			myPanel = new MyPanel();
+			this.add(myPanel);
+
+			b1.timeGo();
+			b2.timeGo();
+			b3.timeGo();
+			b4.timeGo();
+			b5.timeGo();
+			b6.timeGo();
+		}
+
+	}
+
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+		new MyFrame("Ping");
+	}
+
+}
