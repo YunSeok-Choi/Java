@@ -1,0 +1,177 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.*;
+
+public class SCH extends JFrame{
+	JTextArea tbox = new JTextArea();
+	File fi;
+	public SCH() {	//프레임 설정
+		setTitle("SCH Editer");
+		Container c = getContentPane();
+		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+		
+		createMenu();	//JMenu생성 메소드 호출
+		c.add(new JScrollPane(tbox));	//JTextArea 등록
+		
+		setSize(800,600);
+		setVisible(true);
+	}
+	public void createMenu() {
+		JMenuBar bar = new JMenuBar();				//메뉴바 생성	
+		JMenu file = new JMenu("File");				//File 메뉴 생성
+		JMenu view = new JMenu("View");				//View 메뉴 생성
+		JMenu size = new JMenu("Font Size");		 //View메뉴 안에 들어갈 Font Size메뉴 생성
+		String[] item= {"New", "Open File...","Save","Save As...","Exit"};	//File메뉴에 들어갈 메뉴 아이템 이름
+		String[] max = {"4", "8", "10", "12", "14", "16", "18", "20", "22", "50", "100"};//size메뉴에 들어갈 메뉴 이름
+		JMenuItem[] jItem = new JMenuItem[5];		//File메뉴에 들어갈 메뉴 아이템(item[]이 들어갈 자리)	
+		JMenuItem color = new JMenuItem("Color");	//View메뉴에 들어갈 메뉴 아이템
+		
+		
+		JList<String> fontSize = new JList<String>(max);	//size 메뉴에 들어갈 JList
+		fontSize.addMouseListener(new MouseAdapter(){		//마우스 리스너 등록, 익명 클래스 이벤트 작성
+			public void mouseClicked(MouseEvent e) {		
+				if(e.getClickCount() == 2) {				//마우스 더블클릭 시 
+					JList list = (JList)e.getSource();		//JList소스 얻어옴
+					int value = Integer.valueOf((String)list.getSelectedValue());	//더블클릭한 숫자 가져옴
+					tbox.setFont(new Font("Basic", Font.PLAIN, value));				//더블클릭한 숫자로 폰트 크기 변경
+				}
+			}
+		});
+		size.add(new JScrollPane(fontSize));				//size에 JList인 fontsize를 JScrolPane에 넣어 등록
+		color.addActionListener(new ActionListener() {		//color메뉴 아이템에 리스너 등록, 익명 클래스 이벤트 작성
+			public void actionPerformed(ActionEvent e) {	
+				Color setcolor = JColorChooser.showDialog(null, "Color", Color.YELLOW);	//JColorChooser 등록
+				if(setcolor != null)						//컬러 선택을 했을 경우
+					tbox.setForeground(setcolor);			//JTextArea인 tbox의 글자색을 변경
+			}
+		});
+		view.add(size);										//view 메뉴에 size메뉴 등록
+		view.add(color);									//view 메뉴에 color메뉴 아이템 등록
+		color.setToolTipText("글자 색을 설정합니다.");			//color메뉴 아이템에 툴팁 등록
+		
+		for(int i=0; i<item.length;i++) {
+			if(i == 4)
+				file.addSeparator();						// i == 4일 경우 분리선 등록
+			jItem[i] = new JMenuItem(item[i]);				// jItem[i] 객체 생성
+			jItem[i].addActionListener(new MyAL());			// jItem[i]에 공통 리스너 등록
+			file.add(jItem[i]);								// file메뉴에 jTtem[i]메뉴 아이템 등록
+		}
+		jItem[0].setToolTipText("새로운 창을 엽니다.");			// "New"인 jItem[0]에 툴팁 등록
+		
+		jItem[1].setToolTipText("파일을 생성합니다.");			// "Open File"인 jItem[1]에 툴팁 등록
+		jItem[1].addActionListener(new MyOP());				// jItem[1]에 리스너 등록
+		jItem[1].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));//Ctrl + O 단축기 설정
+		
+		jItem[2].setToolTipText("파일을 저장합니다.");			//"Save"인 jItem[2]에 툴팁 등록
+		jItem[2].addActionListener(new MySave());			//jItem[2]에 리스너 등록
+		jItem[2].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.ALT_MASK));//Alt + S 단축기 설정
+		
+		jItem[3].setToolTipText("다른이름으로 파일으 저장합니다.");	//"Save As..."인 jItem[3]에 툴팁 등록
+		jItem[3].addActionListener(new MySaveAs());			//jItem[3]에 리스너 등록
+		jItem[3].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));//Ctrl + S 단축기 설정
+		
+		jItem[4].setToolTipText("프로그램을 종료합니다.");		//"Exit"인 jItem[4]에 툴팁 등록
+		bar.add(file);										//메뉴 바인 bar에 file 메뉴 등록
+		bar.add(view);										//메뉴 바인 bar에 view 메뉴 등록
+		
+		setJMenuBar(bar);									//메뉴바인 bar를 등록
+	}
+	class MyAL implements ActionListener{					//jItem[i]메뉴 아이템에 공통으로 들어가는 이벤트 *58절 참조
+		public void actionPerformed(ActionEvent e) {		
+			String cmd = e.getActionCommand();				//클릭한 문자열을 가져옴
+			switch(cmd) {
+			case "New" :									//"New" 선택시 SCH 클래스 호출
+				new SCH();
+				break;
+			case "Open File..." :							//"Open FIle..."선텍시 MyOp 클래스 호출
+				new MyOP();
+				break;
+			case "Save" :
+				new MySave();								//"Save"선택시 MySave 클래스 호출
+				break;
+			case "Save As..." :								//"Save As..."선택시 MySaveAs 클래스 호출
+				new MySaveAs();
+				break;
+			case "Exit" :
+				setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);	//프레임 전체 종료
+				System.exit(0);									//시스템 종료
+				break;
+			}
+		}
+	}
+	class MyOP implements ActionListener{					//"New" 선택시 호출되는 클래스 *85절 참조
+		private JFileChooser chooser;
+		EncodingDetector encodingDetector = new EncodingDetector();	//인코딩 객체 생성
+		public MyOP() {
+			chooser = new JFileChooser();					//JFileeChooser 생성
+		}
+		public void actionPerformed(ActionEvent e) {
+			int ret = chooser.showOpenDialog(null);			//파일 Open 다이얼로그 생성
+			String str;
+			if(ret != JFileChooser.APPROVE_OPTION)			//아무것도 열지 않았다면 리턴
+				return;
+			try {
+				fi = chooser.getSelectedFile();				//선택한 파일을 fi에 대입
+				String encoding = encodingDetector.encoding(fi.toString());	// 인코딩
+				FileInputStream fr = new FileInputStream(fi);//파일 입력 스트림에 넣기
+				BufferedReader br = new BufferedReader(new InputStreamReader(fr, encoding));
+	               while((str = br.readLine()) != null)
+	                {
+	                   tbox.append(str+"\n");				//JTextArea에 등록
+	                }
+	               fr.close();
+	               br.close();
+			} 
+			catch(FileNotFoundException e1) {
+				JOptionPane.showMessageDialog(null, "파일을 찾을 수 없습니다.");	//파일이 없을 경우 에러 매세지 호출
+			}
+			catch (IOException e1) {
+				e1.printStackTrace();
+			}
+		}
+		
+	}
+	class MySave implements ActionListener{					//"Save"선택시 호출되는 클래스 *92절 참조
+		MySaveAs first;
+		public void actionPerformed(ActionEvent e) {
+			if(fi == null) {
+				first = new MySaveAs();						//불러온 파일이 아니라 새로 작성 되는 파일이라면
+				first.actionPerformed(e);					//MySaveAs클래스를 호출하여 파일명을 작성하여 저장하게 함
+			}
+			else {
+			 try {
+				tbox.write(new OutputStreamWriter(new FileOutputStream(fi), "UTF-8"));//파일명이 있는 텍스트라면 바로 저장
+			} catch (IOException e1) {
+				JOptionPane.showMessageDialog(null, "저장 위치가 잘못되었습니다.");	//저장 위치가 잘못될 경우 에러 메세지 호출
+				}
+			}
+		}
+	}
+	class MySaveAs implements ActionListener{				//"Save As..."선택시 호출되는 클래스 *94절 참조
+		private JFileChooser chooser;
+		MySaveAs(){
+			chooser = new JFileChooser();					//JFileChooser 생성
+		}
+		public void actionPerformed(ActionEvent e) {
+			int ret = chooser.showSaveDialog(null);			//파일 Save 다일얼로그 생성
+			if(ret != JFileChooser.APPROVE_OPTION) {
+				return;
+			}
+			fi = chooser.getSelectedFile();
+			if (!fi.getName().endsWith(".txt")) {			//파일명에 .txt를 붙이지 않았으면 자동으로 .txt를 붙여줌
+		        fi = new File(fi.getParentFile(), fi.getName() + ".txt");
+			}
+			 try {											//UTF-8로 작성
+				tbox.write(new OutputStreamWriter(new FileOutputStream(fi), "UTF-8"));
+			}
+			 catch (IOException e1) {
+				 JOptionPane.showMessageDialog(null, "저장 위치가 잘못되었습니다.");	//저장 위치가 잘못될 경우 에러 메세지 호출
+			}
+		}
+	}
+	
+	public static void main(String args[]) {
+		new SCH();											//JFrame이 있는 SCH클래스 호출
+	}
+}
