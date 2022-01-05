@@ -73,6 +73,7 @@ public class SnakeGame {
 				}
 			});
 		}
+		
 
 		public void startTimer() {
 			timer = new Timer(200, new ActionListener() {
