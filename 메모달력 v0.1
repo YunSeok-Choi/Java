@@ -1,0 +1,96 @@
+package calendar;
+
+import java.util.*;
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+import javax.swing.event.*;
+
+public class Main extends JFrame {
+	public static Dday[][] dayPanel = new Dday[5][7];
+	public static JTextArea[][] text = new JTextArea[5][7];
+	public static JLabel[][] label = new JLabel[5][7];
+	public static JButton exit_B = new JButton("Ⅹ");
+	public static Date d = new Date();
+	public static int[] year = new int[10000];
+	public static int[] month = new int[12];
+	public static int[] day = new int[31];
+	public static int d_SizeX = 210;
+	public static int d_SizeY = 180;
+	public static int R = 245, G = 222, B = 179, A = 122;
+	public static int y = 0, x = 0;
+
+	Main() {
+		Map map = new Map();
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.setLayout(new FlowLayout());
+		this.setUndecorated(true);
+		this.setBackground(new Color(R, G, B, A));
+		this.add(map);
+		this.setLocation(10, 10);
+		this.setSize(1700, 1000);
+		this.setVisible(true);
+	}
+
+	static class Dday extends JPanel {
+
+		Dday() {
+			this.setPreferredSize(new Dimension(d_SizeX, d_SizeY));
+			this.setBackground(new Color(R, G, B, A));
+			this.setLayout(new BorderLayout());
+			dateInit();
+			if (x >= 7) {
+				x = 0;
+				y++;
+			}
+			this.add(label[y][x], BorderLayout.NORTH);
+			this.add(text[y][x], BorderLayout.CENTER);
+			x++;
+		}
+
+		public static void dateInit() {
+			int day = 1;
+			for (int i = 0; i < 5; i++) {
+				for (int j = 0; j < 7; j++) {
+					label[i][j] = new JLabel(day + "일");
+					label[i][j].setBackground(new Color(R, G, B, A));
+					text[i][j] = new JTextArea(5, 5);
+					text[i][j].setBackground(new Color(R, G, B, A));
+					day++;
+				}
+			}
+		}
+
+	}
+
+	static class Map extends JPanel {
+
+		Map() {
+			this.setPreferredSize(new Dimension(1700, 1000));
+			this.setLayout(new FlowLayout());
+			this.setBackground(new Color(R, G, B, A));
+			exit_B.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					System.exit(0);
+				}
+			});
+			exit_B.setBackground(new Color(R, G, B, A));
+			for (int i = 0; i < 5; i++) {
+				for (int j = 0; j < 7; j++) {
+					dayPanel[i][j] = new Dday();
+					this.add(dayPanel[i][j]);
+					if (i == 0 && j == 6)
+						this.add(exit_B);
+				}
+			}
+
+		}
+
+	}
+
+	public static void main(String[] args) {
+		Main main = new Main();
+	}
+
+}
